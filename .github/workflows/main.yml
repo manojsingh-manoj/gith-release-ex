@@ -1,0 +1,41 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag for the release (e.g., v1.0.0)'
+        required: true
+      release_name:
+        description: 'Name of the release (e.g., First Release)'
+        required: true
+      release_notes:
+        description: 'Optional release notes'
+        required: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate files
+        run: |
+          mkdir -p build_output
+          echo "Generated content" > build_output/file.txt
+
+      - name: Create ZIP archive
+        run: |
+          zip -r artifact.zip build_output
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name }}
+          name: ${{ github.event.inputs.release_name }}
+          body: ${{ github.event.inputs.release_notes }}
+          files: artifact.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
